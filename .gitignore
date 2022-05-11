@@ -49,3 +49,9 @@ ehthumbs.db
 Thumbs.db
 
 # Folders #
+/Graphs/*
+/HCP/*
+/Humans/*
+/Monks/*
+/RelevantLit/*
+/SfN2021/*
