@@ -120,17 +120,17 @@ for curr_subj = 1:size(subjs,2)
         end
     end    
     
-    for curr_roi=1:length(allvisual_numbers)
-        for i = 1:2
+    for i = 1:2
+        for curr_roi=1:length(allvisual_numbers)
             curr_area_nodelist{i}=allvisual{i}(allvisual{i}(:,2)==allvisual_numbers(curr_roi),1);
            
             % calculate surface area across entire ROI
             % if code breaks due to empty ROI, add check. 
             retino_surfacearea_smoothwm{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_smoothwm_col));
             retino_surfacearea_pial{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_pial_col));
-            
-            total_surfacearea{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col)); 
+             
         end
+        total_surfacearea{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
     end
     
     if plot_indiv_subj
