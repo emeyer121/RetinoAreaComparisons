@@ -1,5 +1,5 @@
 function [total_surfacearea,retino_surfacearea_smoothwm,retino_surfacearea_pial] = getSubjData( ...
-    subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
+    subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col,fovfill)
 
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
@@ -26,7 +26,7 @@ for curr_subj = 1:size(subjs,2)
     % IMPORTANT: file has incomplete note list. only has data for nodes in
     % visual areas
     if exist([subj_dir,'rois/allvisual-rh.1D.dset'])
-        if strcmp(num2str(species),'Humans')
+        if strcmp(num2str(species),'Humans') && fovfill
             allvisual{1}=Read_1D([subj_dir,'rois/allvisual-rh_fovfill.1D.dset'],opt);
             allvisual{2}=Read_1D([subj_dir,'rois/allvisual-lh_fovfill.1D.dset'],opt);
         else
