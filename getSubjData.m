@@ -1,5 +1,7 @@
-function [total_surfacearea,retino_surfacearea_smoothwm,retino_surfacearea_pial] = getSubjData( ...
-    subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
+function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,...
+    parietal_surfacearea_total,parietal_surfacearea_smoothwm,parietal_surfacearea_pial,...
+    frontal_surfacearea_total,frontal_surfacearea_smoothwm,frontal_surfacearea_pial] = getSubjData( ...
+    subjs,species,plot_indiv_subj,allvisual_numbers,allparietal_numbers,allfrontal_numbers,nodearea_smoothwm_col,nodearea_pial_col)
 
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
@@ -35,7 +37,6 @@ for curr_subj = 1:size(subjs,2)
         end
     else
         fprintf(['No allvisual in ' num2str(subjs{curr_subj}) '\n']);
-        norois=[norois,curr_subj];
     end
     if exist([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D'])
         temp=load([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D']);
@@ -46,6 +47,18 @@ for curr_subj = 1:size(subjs,2)
             all_LGN{1}(curr_subj)=nan;
             all_LGN{2}(curr_subj)=nan;
         end
+    end
+    if exist([subj_dir,'rois/allparietal-rh.1D.dset'])
+        allparietal{1}=Read_1D([subj_dir,'rois/allparietal-rh.1D.dset'],opt);
+        allparietal{2}=Read_1D([subj_dir,'rois/allparietal-lh.1D.dset'],opt);
+    else
+        fprintf(['No allparietal in ' num2str(subjs{curr_subj}) '\n']);
+    end
+    if exist([subj_dir,'rois/allfrontal-rh.1D.dset'])
+        allfrontal{1}=Read_1D([subj_dir,'rois/allfrontal-rh.1D.dset'],opt);
+        allfrontal{2}=Read_1D([subj_dir,'rois/allfrontal-lh.1D.dset'],opt);
+    else
+        fprintf(['No allfrontal in ' num2str(subjs{curr_subj}) '\n']);
     end
     
     % Surface curvature files w/ 1 columns:
@@ -121,17 +134,36 @@ for curr_subj = 1:size(subjs,2)
     end    
     
     for i = 1:2
+        %visual areas
         for curr_roi=1:length(allvisual_numbers)
-            curr_area_nodelist{i}=allvisual{i}(allvisual{i}(:,2)==allvisual_numbers(curr_roi),1);
-           
-            % calculate surface area across entire ROI
-            % if code breaks due to empty ROI, add check. 
+            curr_area_nodelist{i}=allvisual{i}(allvisual{i}(:,2)==allvisual_numbers(curr_roi),1); 
             retino_surfacearea_smoothwm{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_smoothwm_col));
             retino_surfacearea_pial{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_pial_col));
-             
         end
-        total_surfacearea{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
+        retino_surfacearea_total{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
+        
+        if exist('allparietal','var')
+            %parietal areas
+            for curr_roi=1:length(allparietal_numbers)
+                curr_area_nodelist{i}=allparietal{i}(allparietal{i}(:,2)==allparietal_numbers(curr_roi),1);
+                parietal_surfacearea_smoothwm{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_smoothwm_col));
+                parietal_surfacearea_pial{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_pial_col));
+            end
+            parietal_surfacearea_total{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
+        end
+        
+        if exist('allfrontal','var')
+            %frontal areas
+            for curr_roi=1:length(allfrontal_numbers)
+                curr_area_nodelist{i}=allfrontal{i}(allfrontal{i}(:,2)==allfrontal_numbers(curr_roi),1);
+                frontal_surfacearea_smoothwm{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_smoothwm_col));
+                frontal_surfacearea_pial{i}(curr_roi,curr_subj)=sum(surfmeasures{i}(ismember(surfmeasures{i}(:,1),curr_area_nodelist{i}),nodearea_pial_col));
+            end
+            frontal_surfacearea_total{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
+        end
     end
+
+    clear allparietal allfrontal
     
     if plot_indiv_subj
         curr_subject_combinedhemi_retino = [retino_surfacearea_smoothwm{1}(:,curr_subj), retino_surfacearea_smoothwm{2}(:,curr_subj)];  % get the last column (curr_subj) and create graph with that 
