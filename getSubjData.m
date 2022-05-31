@@ -2,6 +2,7 @@ function [total_surfacearea,retino_surfacearea_smoothwm,retino_surfacearea_pial]
     subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col,fovfill)
 
 for curr_subj = 1:size(subjs,2)
+%     disp(curr_subj)
 %     cd(num2str(subjs{curr_subj}))
     subj_dir = ['./',species,'/',num2str(subjs{curr_subj}),'/'];
 
@@ -94,6 +95,7 @@ for curr_subj = 1:size(subjs,2)
     for i = 1:2
         V1nodedistances_minmedian{i}=[];
         for x = 1:length(allothernodes{i})
+%             x
             V1nodedistances_minmedian{i}(x,:)=[allothernodes{i}(x),min(V1nodepair_distance{i}(V1allnodepairs{i}(:,2)==allothernodes{i}(x),3)),median(V1nodepair_distance{i}(V1allnodepairs{i}(:,2)==allothernodes{i}(x),3))];
         end
         V1nodedistances_minmedian_roiavg{i}=[];
