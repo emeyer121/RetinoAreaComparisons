@@ -1,5 +1,15 @@
-function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial] = getSubjData( ...
-    subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
+function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,...
+    parietal_surfacearea_total,parietal_surfacearea_smoothwm,parietal_surfacearea_pial,...
+    frontal_surfacearea_total,frontal_surfacearea_smoothwm,frontal_surfacearea_pial,...
+    parietal_check,frontal_check] = getSubjData_human( ...
+    subjs,species,plot_indiv_subj,allvisual_numbers,allparietal_numbers,allfrontal_numbers,nodearea_smoothwm_col,nodearea_pial_col)
+
+parietal_check = {};
+parietal_check{1} = zeros(length(allparietal_numbers),size(subjs,2));
+parietal_check{2} = zeros(length(allparietal_numbers),size(subjs,2));
+frontal_check = {};
+frontal_check{1} = zeros(length(allfrontal_numbers),size(subjs,2));
+frontal_check{2} = zeros(length(allfrontal_numbers),size(subjs,2));
 
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
@@ -36,7 +46,22 @@ for curr_subj = 1:size(subjs,2)
     else
         fprintf(['No allvisual in ' num2str(subjs{curr_subj}) '\n']);
     end
-
+    if exist([subj_dir,'rois/allparietal-rh.1D.dset'])
+        allparietal{1}=Read_1D([subj_dir,'rois/allparietal-rh.1D.dset'],opt);
+        allparietal{2}=Read_1D([subj_dir,'rois/allparietal-lh.1D.dset'],opt);
+        parietal_check{1}(unique(allparietal{1}(:,2)),curr_subj) = 1;
+        parietal_check{2}(unique(allparietal{2}(:,2)),curr_subj) = 1;
+    else
+        fprintf(['No allparietal in ' num2str(subjs{curr_subj}) '\n']);
+    end
+    if exist([subj_dir,'rois/allfrontal-rh.1D.dset'])
+        allfrontal{1}=Read_1D([subj_dir,'rois/allfrontal-rh.1D.dset'],opt);
+        allfrontal{2}=Read_1D([subj_dir,'rois/allfrontal-lh.1D.dset'],opt);
+        frontal_check{1}(unique(allfrontal{1}(:,2)),curr_subj) = 1;
+        frontal_check{2}(unique(allfrontal{2}(:,2)),curr_subj) = 1;
+    else
+        fprintf(['No allfrontal in ' num2str(subjs{curr_subj}) '\n']);
+    end
 % code works but LGN data is not being used right now
 %     if exist([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D'])
 %         temp=load([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D']);
