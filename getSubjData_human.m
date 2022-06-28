@@ -1,5 +1,16 @@
-function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial] = getSubjData( ...
-    subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
+function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,...
+    parietal_surfacearea_total,parietal_surfacearea_smoothwm,parietal_surfacearea_pial,...
+    frontal_surfacearea_total,frontal_surfacearea_smoothwm,frontal_surfacearea_pial,...
+    LGN_surfacearea,parietal_check,frontal_check] = getSubjData_human( ...
+    subjs,species,plot_indiv_subj,allvisual_numbers,allparietal_numbers,allfrontal_numbers,...
+    nodearea_smoothwm_col,nodearea_pial_col)
+
+parietal_check = {};
+parietal_check{1} = zeros(length(allparietal_numbers),size(subjs,2));
+parietal_check{2} = zeros(length(allparietal_numbers),size(subjs,2));
+frontal_check = {};
+frontal_check{1} = zeros(length(allfrontal_numbers),size(subjs,2));
+frontal_check{2} = zeros(length(allfrontal_numbers),size(subjs,2));
 
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
@@ -36,18 +47,33 @@ for curr_subj = 1:size(subjs,2)
     else
         fprintf(['No allvisual in ' num2str(subjs{curr_subj}) '\n']);
     end
-
+    if exist([subj_dir,'rois/allparietal-rh.1D.dset'])
+        allparietal{1}=Read_1D([subj_dir,'rois/allparietal-rh.1D.dset'],opt);
+        allparietal{2}=Read_1D([subj_dir,'rois/allparietal-lh.1D.dset'],opt);
+        parietal_check{1}(unique(allparietal{1}(:,2)),curr_subj) = 1;
+        parietal_check{2}(unique(allparietal{2}(:,2)),curr_subj) = 1;
+    else
+        fprintf(['No allparietal in ' num2str(subjs{curr_subj}) '\n']);
+    end
+    if exist([subj_dir,'rois/allfrontal-rh.1D.dset'])
+        allfrontal{1}=Read_1D([subj_dir,'rois/allfrontal-rh.1D.dset'],opt);
+        allfrontal{2}=Read_1D([subj_dir,'rois/allfrontal-lh.1D.dset'],opt);
+        frontal_check{1}(unique(allfrontal{1}(:,2)),curr_subj) = 1;
+        frontal_check{2}(unique(allfrontal{2}(:,2)),curr_subj) = 1;
+    else
+        fprintf(['No allfrontal in ' num2str(subjs{curr_subj}) '\n']);
+    end
 % code works but LGN data is not being used right now
-%     if exist([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D'])
-%         temp=load([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D']);
-%         if ~isempty(temp)
-%             all_LGN{1}(curr_subj)=temp(2);
-%             all_LGN{2}(curr_subj)=temp(4);
-%         else
-%             all_LGN{1}(curr_subj)=nan;
-%             all_LGN{2}(curr_subj)=nan;
-%         end
-%     end
+    if exist([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D'])
+        temp=load([subj_dir,'rois/' num2str(subjs{curr_subj}) '_LGN.1D']);
+        if ~isempty(temp)
+            allLGN{1}=temp(2);
+            allLGN{2}=temp(4);
+        else
+            allLGN{1}=nan;
+            allLGN{2}=nan;
+        end
+    end
     
     % Surface curvature files w/ 1 columns:
     % 1) surface curvature value 
@@ -149,9 +175,13 @@ for curr_subj = 1:size(subjs,2)
             end
             frontal_surfacearea_total{i}(curr_subj) = sum(surfmeasures{i}(:,nodearea_smoothwm_col));
         end
+        
+        if exist('allLGN','var')
+            LGN_surfacearea{i}(curr_subj)=allLGN{i};
+        end
     end
 
-    clear allparietal allfrontal
+    clear allparietal allfrontal allLGN
     
     if plot_indiv_subj
         curr_subject_combinedhemi_retino = [retino_surfacearea_smoothwm{1}(:,curr_subj), retino_surfacearea_smoothwm{2}(:,curr_subj)];  % get the last column (curr_subj) and create graph with that 
