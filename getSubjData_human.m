@@ -1,7 +1,7 @@
 function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,...
     parietal_surfacearea_total,parietal_surfacearea_smoothwm,parietal_surfacearea_pial,...
     frontal_surfacearea_total,frontal_surfacearea_smoothwm,frontal_surfacearea_pial,...
-    LGN_surfacearea,parietal_check,frontal_check] = getSubjData_human( ...
+    LGN_surfacearea,parietal_check,frontal_check,total_size] = getSubjData_human( ...
     subjs,species,plot_indiv_subj,allvisual_numbers,allparietal_numbers,allfrontal_numbers,...
     nodearea_smoothwm_col,nodearea_pial_col)
 
@@ -11,6 +11,7 @@ parietal_check{2} = zeros(length(allparietal_numbers),size(subjs,2));
 frontal_check = {};
 frontal_check{1} = zeros(length(allfrontal_numbers),size(subjs,2));
 frontal_check{2} = zeros(length(allfrontal_numbers),size(subjs,2));
+total_size = zeros(size(subjs,2),2);
 
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
@@ -28,6 +29,10 @@ for curr_subj = 1:size(subjs,2)
     opt.verb = 0;
     surfmeasures{1}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_rh.1D.dset'],opt);
     surfmeasures{2}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_lh.1D.dset'],opt);
+    
+    
+    total_size(curr_subj,1) = mean([sum(surfmeasures{1}(:,2)),sum(surfmeasures{1}(:,3))]);
+    total_size(curr_subj,2) = mean([sum(surfmeasures{2}(:,2)),sum(surfmeasures{2}(:,3))]);
     
     % ROI files for retinotopic maps w/ 2 columns:
     % 1) node index

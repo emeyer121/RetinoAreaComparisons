@@ -1,6 +1,7 @@
-function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial] = getSubjData( ...
+function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,total_size] = getSubjData( ...
     subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
 
+total_size = zeros(size(subjs,2),2);
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
     subj_dir = ['./',species,'/',num2str(subjs{curr_subj}),'/'];
@@ -17,6 +18,9 @@ for curr_subj = 1:size(subjs,2)
     opt.verb = 0;
     surfmeasures{1}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_rh.1D.dset'],opt);
     surfmeasures{2}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_lh.1D.dset'],opt);
+    
+    total_size(curr_subj,1) = mean([sum(surfmeasures{1}(:,2)),sum(surfmeasures{1}(:,3))],'omitnan');
+    total_size(curr_subj,2) = mean([sum(surfmeasures{2}(:,2)),sum(surfmeasures{2}(:,3))],'omitnan');
     
     % ROI files for retinotopic maps w/ 2 columns:
     % 1) node index
