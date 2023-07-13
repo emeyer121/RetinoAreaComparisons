@@ -1,7 +1,7 @@
 function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfacearea_pial,total_size] = getSubjData( ...
     subjs,species,plot_indiv_subj,allvisual_numbers,nodearea_smoothwm_col,nodearea_pial_col)
 
-total_size = zeros(size(subjs,2)-1,2);
+total_size = nan(size(subjs,2)-1,2);
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
     if ~strcmp(subjs{curr_subj},'oct')
