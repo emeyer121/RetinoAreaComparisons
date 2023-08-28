@@ -4,12 +4,13 @@ function [retino_surfacearea_total,retino_surfacearea_smoothwm,retino_surfaceare
 total_size = nan(size(subjs,2)-1,2);
 for curr_subj = 1:size(subjs,2)
 %     cd(num2str(subjs{curr_subj}))
-    if ~strcmp(subjs{curr_subj},'oct')
-    if curr_subj>4
-        curr_subj = curr_subj - 1;
-    end
+%     if ~strcmp(subjs{curr_subj},'oct')
+    
     subj_dir = ['./',species,'/',num2str(subjs{curr_subj}),'/'];
-
+    
+%     if curr_subj>4
+%         curr_subj = curr_subj - 1;
+%     end
     % File w/ various measures of cortical surface contains 7 columns (use 2 & 3 for area): 
     % 1) node index
     % 2) node area along smoothwm surface
@@ -180,5 +181,5 @@ for curr_subj = 1:size(subjs,2)
         title([num2str(subjs{curr_subj})])
         saveas(gcf, fullFileName); 
     end
-    end
+%     end
 end
