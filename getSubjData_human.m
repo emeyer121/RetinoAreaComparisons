@@ -30,7 +30,6 @@ for curr_subj = 1:size(subjs,2)
     surfmeasures{1}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_rh.1D.dset'],opt);
     surfmeasures{2}=Read_1D([subj_dir,num2str(subjs{curr_subj}) '_surfmeasures_lh.1D.dset'],opt);
     
-    
     total_size(curr_subj,1) = mean([sum(surfmeasures{1}(:,2)),sum(surfmeasures{1}(:,3))]);
     total_size(curr_subj,2) = mean([sum(surfmeasures{2}(:,2)),sum(surfmeasures{2}(:,3))]);
     
