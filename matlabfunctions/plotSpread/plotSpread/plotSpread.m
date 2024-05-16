@@ -97,7 +97,7 @@ function handles = plotSpread(varargin)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dotsize=13;
+dotsize=8;
 
 def.binWidth = 0.1;
 def.spreadFcn = {'xp',[]};
