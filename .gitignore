@@ -32,12 +32,18 @@
 *.mp4
 *.csv
 *.mat
+*.txt
+*.npz
+*.json
+*.tsv
+*.nii
 
 # Images #
 *.png
 *.jpg
 *.pdf
 *.pptx
+*.svg
 
 # OS generated files #
 ######################
