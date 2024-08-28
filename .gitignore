@@ -37,6 +37,7 @@
 *.json
 *.tsv
 *.nii
+*.dat
 
 # Images #
 *.png
