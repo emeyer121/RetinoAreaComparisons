@@ -24,7 +24,7 @@ import logging
 import random
 
 
-def combine_rois(nii_dir):
+def combine_rois_P1(nii_dir):
     # Define the ROI mappings
     roi_to_region = {
         'V1': 'occipital', 'V2': 'occipital', 'V3': 'occipital', 'hV4': 'occipital',
@@ -37,6 +37,50 @@ def combine_rois(nii_dir):
     # Initialize the ROI groups
     roi_groups = {
         'occipital': [],
+        'ventral': [],
+        'dorsal': [],
+        'lateral': [],
+        'parietal': []
+    }
+
+        # Iterate through each file in the directory
+    for filename in os.listdir(nii_dir):
+        if filename.endswith('.nii') or filename.endswith('.nii.gz'):
+            # Load the NIfTI file
+            nii_file_path = os.path.join(nii_dir, filename)
+            nii_img = nib.load(nii_file_path)
+            
+            # Extract the ROI name from the filename (assuming the filename contains the ROI name)
+            roi_name = os.path.splitext(filename)[0][:-3]
+            # Map the ROI to its region
+            region = roi_to_region.get(roi_name, None)
+            if region:
+                roi_groups[region].append(nii_img)
+
+    # Combine the ROIs into regions
+    combined_rois = {}
+    for region, imgs in roi_groups.items():
+        if imgs:
+            combined_img = concat_imgs(imgs)
+            combined_img = math_img('np.sum(img, axis=-1)', img=combined_img)
+            combined_rois[region] = combined_img
+
+    return combined_rois
+
+def combine_rois_P2(nii_dir):
+    # Define the ROI mappings
+    roi_to_region = {
+        'V1': 'occipital', 'V2': 'occipital', 'V3': 'occipital', 'hV4': 'V4',
+        'VO1': 'ventral', 'VO2': 'ventral', 'PHC1': 'ventral', 'PHC2': 'ventral',
+        'V3A': 'dorsal', 'V3B': 'dorsal',
+        'LO1': 'lateral', 'LO2': 'lateral', 'TO1': 'lateral', 'TO2': 'lateral',
+        'IPS0': 'parietal', 'IPS1': 'parietal', 'IPS2': 'parietal', 'IPS3': 'parietal', 'IPS4': 'parietal', 'IPS5': 'parietal'
+    }
+
+    # Initialize the ROI groups
+    roi_groups = {
+        'occipital': [],
+        'V4': [],
         'ventral': [],
         'dorsal': [],
         'lateral': [],
@@ -107,7 +151,7 @@ def extract_top_words(df):
         'superior parietal','posterior parietal','frontoparietal network','intraparietal sulcus','sulcus ips',
         'intraparietal','parietal occipital','frontoparietal','parietal frontal','parietal network','superior inferior',
         'ips','spl','ffa','parietal cortex','fronto parietal','parietal lobes','inferior superior','inferior occipital',
-        'lobule','lobules','parietal cortices','prefrontal parietal','wm','memory wm','wm task','visuo spatial'
+        'lobule','lobules','parietal cortices','prefrontal parietal','wm','memory wm','wm task','visuo spatial','frontal lobes'
     ]
 
     tmp = df.sort_values(by="probReverse", ascending=False)
@@ -272,7 +316,6 @@ def merge_and_expand_words_vals(all_words, all_vals, expansion_factors):
 
 # Extract region ROIS
 nii_dir = os.path.join(os.path.dirname(__file__), 'rois')
-combined_rois = combine_rois(nii_dir)
 
 # Fetch Neurosynth data
 neurosynth_db = get_neurosynth_db()
@@ -285,17 +328,18 @@ dset = convert_neurosynth_to_dataset(
 )
 
 # Create a figure with subplots
+combined_rois = combine_rois_P1(nii_dir)
 regions = list(combined_rois.keys())
 fig, axes = plt.subplots(1, len(regions), figsize=(len(regions) * 5, 10))
-all_words = {}
-all_vals = {}
+all_words_withV4 = {}
+all_vals_withV4 = {}
 count = 0
 
 for region, data in combined_rois.items():
     filtered_list, filtered_vals = process_region(region, data, dset)
     print(filtered_list[:20])
-    all_words[region] = filtered_list
-    all_vals[region] = filtered_vals
+    all_words_withV4[region] = filtered_list
+    all_vals_withV4[region] = filtered_vals
 
     # Prepare data for the table
     table_data = [[word] for word in filtered_list[:20]]
@@ -320,7 +364,7 @@ fig_hist, axes_hist = plt.subplots(1, len(regions), figsize=(len(regions) * 5, 1
 count = 0
 
 for idx, region in enumerate(regions):
-    vals = all_vals[region]
+    vals = all_vals_withV4[region]
     cutoff = vals[19] if len(vals) > 19 else vals[-1]  # Ensure there are at least 20 values
 
     # Plot histogram
@@ -340,7 +384,7 @@ count = 0
 
 fig, axes = plt.subplots(1, len(regions), figsize=(20, 10))
 for region, data in combined_rois.items():
-    wordcloud = generate_wordcloud(all_words[region],all_vals[region],cmap[count])
+    wordcloud = generate_wordcloud(all_words_withV4[region],all_vals_withV4[region],cmap[count])
 
     axes[count].imshow(wordcloud, interpolation='bilinear')
     axes[count].set_title(f'Word Cloud for {region}')
@@ -354,9 +398,38 @@ plt.tight_layout()
 # plt.savefig('./test_fig/BrainmapDecoder_regioncloudv5.svg',dpi=1200)
 plt.show()
 
-expansion_factors = [1.3, 2.67, 3.94, 4.25, 7.11]
+expansion_factors = [1.3, 1.18, 2.67, 3.94, 4.25, 7.11]
 
-merged_words_vals = merge_and_expand_words_vals(all_words, all_vals, expansion_factors)
+# Create a figure with subplots
+combined_rois = combine_rois_P2(nii_dir)
+regions = list(combined_rois.keys())
+fig, axes = plt.subplots(1, len(regions), figsize=(len(regions) * 6, 10))
+all_words_woV4 = {}
+all_vals_woV4 = {}
+count = 0
+
+for region, data in combined_rois.items():
+    filtered_list, filtered_vals = process_region(region, data, dset)
+    print(filtered_list[:20])
+    all_words_woV4[region] = filtered_list
+    all_vals_woV4[region] = filtered_vals
+
+    # Prepare data for the table
+    table_data = [[word] for word in filtered_list[:20]]
+    col_labels = [region]
+
+    # Plot the DataFrame
+    axes[count].axis('off')
+    axes[count].table(cellText=table_data, colLabels=col_labels, loc='center')
+    count += 1
+
+# Adjust layout and save the figure
+plt.tight_layout()
+# plt.savefig('./test_fig/BrainmapDecoder_topwords_filteredv4.png',dpi=1200)
+# plt.savefig('./test_fig/BrainmapDecoder_topwords_filteredv4.svg',dpi=1200)
+plt.show()
+
+merged_words_vals = merge_and_expand_words_vals(all_words_woV4, all_vals_woV4, expansion_factors)
 
 # Sort the dictionary by values in descending order and get the top 50 items
 sorted_merged_words_vals = sorted(merged_words_vals.items(), key=lambda item: item[1], reverse=True)
@@ -372,15 +445,15 @@ table = ax.table(cellText=table_data, colLabels=['Word', 'Value'], loc='center')
 
 # Adjust layout and save the figure
 plt.tight_layout()
-# plt.savefig('./test_fig/BrainmapDecoder_topwords_expansion_norm_v4.png', dpi=1200)
+plt.savefig('./test_fig/BrainmapDecoder_topwords_expansion_norm_wov4.png', dpi=1200)
 plt.show()
 
 # Initialize a dictionary to count the number of regions each word appears in the top 20
 term_region_counts = {word: 0 for word in merged_words_vals.keys()}
 
 # Iterate over each region to find the top 20 words and update the counts
-for region in all_words.keys():
-    top_20_words_in_region = [word for word, val in sorted(zip(all_words[region], all_vals[region]), key=lambda x: x[1], reverse=True)[:20]]
+for region in all_words_woV4.keys():
+    top_20_words_in_region = [word for word, val in sorted(zip(all_words_woV4[region], all_vals_woV4[region]), key=lambda x: x[1], reverse=True)[:20]]
     for word in merged_words_vals.keys():
         if word in top_20_words_in_region:
             term_region_counts[word] += 1
@@ -400,8 +473,8 @@ plt.imshow(wordcloud_exp, interpolation='bilinear')
 plt.axis('off')
 plt.title('Terms Associated with Cortical Expansion')
 plt.tight_layout(pad=0)
-plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.png',dpi=1200)
-plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.svg',dpi=1200)
+plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_wov4.png',dpi=1200)
+plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_wov4.svg',dpi=1200)
 plt.show()
 
 

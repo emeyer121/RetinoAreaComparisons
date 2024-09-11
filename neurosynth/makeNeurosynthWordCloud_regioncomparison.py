@@ -63,11 +63,11 @@ def load_data():
     """
     logging.info("Loading data...")
     try:
-        feature_data_sparse = sparse.load_npz("neurosynth\data-neurosynth_version-7_vocab-terms_source-abstract_type-tfidf_features.npz")
+        feature_data_sparse = sparse.load_npz(".\data-neurosynth_version-7_vocab-terms_source-abstract_type-tfidf_features.npz")
         feature_data = feature_data_sparse.todense()
-        metadata_df = pd.read_table("neurosynth\data-neurosynth_version-7_metadata.tsv.gz")
-        coordinates_df = pd.read_table("neurosynth\data-neurosynth_version-7_coordinates.tsv.gz")
-        feature_names = np.genfromtxt("neurosynth\data-neurosynth_version-7_vocab-terms_vocabulary.txt", dtype=str, delimiter="\t").tolist()
+        metadata_df = pd.read_table(".\data-neurosynth_version-7_metadata.tsv.gz")
+        coordinates_df = pd.read_table(".\data-neurosynth_version-7_coordinates.tsv.gz")
+        feature_names = np.genfromtxt(".\data-neurosynth_version-7_vocab-terms_vocabulary.txt", dtype=str, delimiter="\t").tolist()
         
         ids = metadata_df["id"].tolist()
         feature_df = pd.DataFrame(index=ids, columns=feature_names, data=feature_data)
@@ -77,7 +77,7 @@ def load_data():
         logging.error(f"Error loading data: {e}")
         raise
 
-def define_coordinate_sets(file_path="neurosynth\VTPMcoords.txt"):
+def define_coordinate_sets(file_path=".\VTPMcoords.txt"):
     """
     Define coordinate sets for different brain regions and their scaling factors.
     Returns a dictionary with region names, coordinates, and scaling factors.
@@ -107,25 +107,33 @@ def define_coordinate_sets(file_path="neurosynth\VTPMcoords.txt"):
         logging.error(f"Error reading coordinate sets from file: {e}")
         raise
 
+    new_array = []
     for data in coordinate_sets.items():
         if data[1]['ROI'] in occipitalROI:
             roi_groups['occipitalROI'].append(data[1]['coordinates'][0])
+            new_array.append([data[1]['coordinates'][0][0], data[1]['coordinates'][0][1], data[1]['coordinates'][0][2], data[1]['ROI'], 1.3])
         elif data[1]['ROI'] in dorsalROI:
             roi_groups['dorsalROI'].append(data[1]['coordinates'][0])
+            new_array.append([data[1]['coordinates'][0][0], data[1]['coordinates'][0][1], data[1]['coordinates'][0][2], data[1]['ROI'], 2.67])
         elif data[1]['ROI'] in lateralROI:
             roi_groups['lateralROI'].append(data[1]['coordinates'][0])
+            new_array.append([data[1]['coordinates'][0][0], data[1]['coordinates'][0][1], data[1]['coordinates'][0][2], data[1]['ROI'], 3.94])
         elif data[1]['ROI'] in ventralROI:
             roi_groups['ventralROI'].append(data[1]['coordinates'][0])
+            new_array.append([data[1]['coordinates'][0][0], data[1]['coordinates'][0][1], data[1]['coordinates'][0][2], data[1]['ROI'], 4.25])
         elif data[1]['ROI'] in parietalROI:
             roi_groups['parietalROI'].append(data[1]['coordinates'][0])
+            new_array.append([data[1]['coordinates'][0][0], data[1]['coordinates'][0][1], data[1]['coordinates'][0][2], data[1]['ROI'], 7.11])
 
-    return {
+    coordinate_sets = {
         "occipital": {"coordinates": [roi_groups['occipitalROI'][i] for i in random.sample(range(len(roi_groups['occipitalROI'])), 100)], "scaling_factor": 1.3},
         "ventral": {"coordinates": [roi_groups['ventralROI'][i] for i in random.sample(range(len(roi_groups['ventralROI'])), 100)], "scaling_factor": 2.67},
         "dorsal": {"coordinates": [roi_groups['dorsalROI'][i] for i in random.sample(range(len(roi_groups['dorsalROI'])), 100)], "scaling_factor": 3.94},
         "lateral": {"coordinates": [roi_groups['lateralROI'][i] for i in random.sample(range(len(roi_groups['lateralROI'])), 100)], "scaling_factor": 4.25},
         "parietal": {"coordinates": [roi_groups['parietalROI'][i] for i in random.sample(range(len(roi_groups['parietalROI'])), 100)], "scaling_factor": 7.11}
     }
+
+    return coordinate_sets, new_array
 
 #    print(roi_groups)
 #    print(roi_groups['occipitalROI'])
@@ -505,7 +513,9 @@ def main():
     Main function to orchestrate the entire analysis process.
     """
     metadata_df, coordinates_df, feature_df = load_data()
-    coordinate_sets = define_coordinate_sets()
+    coordinate_sets, new_data = define_coordinate_sets()
+    print(new_data)
+    np.savetxt("./rois/coords_w_expansion.csv", new_data, delimiter=",", fmt='%.3f')
     combined_term_data = process_terms(metadata_df, coordinates_df, feature_df, coordinate_sets)
     
     if combined_term_data.empty:

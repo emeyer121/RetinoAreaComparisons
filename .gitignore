@@ -38,6 +38,8 @@
 *.tsv
 *.nii
 *.dat
+*.dset
+*.1D
 
 # Images #
 *.png

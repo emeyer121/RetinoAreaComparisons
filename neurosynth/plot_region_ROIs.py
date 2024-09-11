@@ -23,7 +23,7 @@ import random
 def combine_rois(nii_dir):
     # Define the ROI mappings
     roi_to_region = {
-        'V1': 'occipital', 'V2': 'occipital', 'V3': 'occipital',
+        'V1': 'occipital', 'V2': 'occipital', 'V3': 'occipital', 'hV4': 'occipital',
         'VO1': 'ventral', 'VO2': 'ventral', 'PHC1': 'ventral', 'PHC2': 'ventral',
         'V3A': 'dorsal', 'V3B': 'dorsal',
         'LO1': 'lateral', 'LO2': 'lateral', 'TO1': 'lateral', 'TO2': 'lateral',
@@ -85,7 +85,7 @@ combined_rois = combine_rois(nii_dir)
 
 # Create a figure with subplots
 regions = list(combined_rois.keys())
-fig, axes = plt.subplots(len(regions), 1, figsize=(10, len(regions) * 5))
+# fig, axes = plt.subplots(len(regions), 1, figsize=(10, len(regions) * 5))
 count = 0
 cmap = ['Blues','Reds','Oranges','Greens','BuGn_r']
 
@@ -97,9 +97,55 @@ for region, data in combined_rois.items():
     # Create a NIfTI image from the chunked data
     img = nib.Nifti1Image(data_array, affine=data.affine, header=data.header)
     img_bin = binarize_img(img)
-    plt.figure(figsize=(10, 5))
-    plot_roi(img_bin, draw_cross=False,cmap=cmap[count], alpha=1)
-    plt.savefig('./rois/regionROI_'+region+'.png',dpi=1200)
-    plt.savefig('./rois/regionROI_'+region+'.svg',dpi=1200)
-    plt.show()
+    # plt.figure(figsize=(10, 5))
+    # plot_roi(img_bin, draw_cross=False,cmap=cmap[count], alpha=1)
+    # plt.savefig('./rois/regionROI_'+region+'.png',dpi=1200)
+    # plt.savefig('./rois/regionROI_'+region+'.svg',dpi=1200)
+    # plt.show()
     count += 1
+
+expansion_factors = [1.3, 2.67, 3.94, 4.25, 7.11]
+
+# Initialize an empty array for the combined data
+combined_data = None
+count = 0
+
+for region, data in combined_rois.items():
+    print(region)
+    # Get the image data array
+    data_array = data.get_fdata()
+    
+    # Initialize combined_data with the same shape as data_array
+    if combined_data is None:
+        combined_data = np.zeros_like(data_array)
+    
+    # Create a mask for the current region
+    region_mask = data_array > 0
+    
+    # Replace the values in the region with the corresponding expansion factor
+    combined_data[region_mask] = expansion_factors[count]
+    
+    # Create a NIfTI image from the modified data array for visualization
+    img = nib.Nifti1Image(region_mask.astype(np.float32) * expansion_factors[count], affine=data.affine, header=data.header)
+    img_bin = binarize_img(img)
+    # plt.figure(figsize=(10, 5))
+    # plot_roi(img_bin, draw_cross=False, cmap=cmap[count], alpha=1)
+    # plt.savefig('./rois/regionROI_' + region + '.png', dpi=1200)
+    # plt.savefig('./rois/regionROI_' + region + '.svg', dpi=1200)
+    # plt.show()
+    count += 1
+
+# Create a new NIfTI image from the combined data
+combined_img = nib.Nifti1Image(combined_data, affine=data.affine, header=data.header)
+
+# Save the combined NIfTI image
+nib.save(combined_img, './rois/combined_expansion_factors.nii')
+
+print(np.unique(combined_data))
+
+# Plot the combined NIfTI image
+plt.figure(figsize=(10, 5))
+plot_roi(combined_img, draw_cross=False)
+plt.savefig('./rois/combined_expansion_factors.png', dpi=1200)
+plt.savefig('./rois/combined_expansion_factors.svg', dpi=1200)
+plt.show()
