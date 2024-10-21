@@ -47,6 +47,8 @@
 *.pdf
 *.pptx
 *.svg
+*.psd
+*.ai
 
 # OS generated files #
 ######################
