@@ -399,9 +399,9 @@ plt.figure(figsize=(10, 5))
 plt.imshow(wordcloud_exp, interpolation='bilinear')
 plt.axis('off')
 plt.title('Terms Associated with Cortical Expansion')
-plt.tight_layout(pad=0)
-plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.png',dpi=1200)
-plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.svg',dpi=1200)
+# plt.tight_layout(pad=0)
+# plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.png',dpi=1200)
+# plt.savefig('./test_fig/BrainmapDecoder_expansioncloud_norm_v4.svg',dpi=1200)
 plt.show()
 
 
